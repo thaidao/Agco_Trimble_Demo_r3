@@ -29,6 +29,10 @@ typedef enum
     // When off, the valve is closed (no gas flowing).
     GAS_VALVE,
 
+    // pin D3
+    // system status
+    SYS_STATUS,
+
     // pin D7
     // when on, it sparks to ignite gas
     IGNITER,

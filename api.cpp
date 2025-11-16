@@ -13,6 +13,7 @@ static void door_sensor_IRQ_handler();
 void setup_api()
 {
   pinMode(2, OUTPUT); // digital pin 2
+  pinMode(3, OUTPUT); // digital pin 3
   pinMode(7, OUTPUT); // digital pin 7
 
   door_sensor_interrupt_handler(digitalRead(3) == HIGH); // we may not get an interrupt at startup, so we call the handler manually
@@ -49,6 +50,10 @@ void set_output(output_t output, bool output_state)
   else if (output == IGNITER)
   {
     digitalWrite(7, output_state);
+  }
+  else if (output == SYS_STATUS)
+  {
+    digitalWrite(3, output_state);
   }
 }
 

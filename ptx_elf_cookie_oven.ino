@@ -31,4 +31,18 @@ void loop() {
   set_output(GAS_VALVE, sensor_voltage > 2000);
 
   delay(1000); // feel free to change. What would you use for an actual iteration period?
+
+  while(1)
+  {
+    set_output(GAS_VALVE, true);
+    set_output(SYS_STATUS, true);
+    set_output(IGNITER, true);
+    delay(1000);
+
+    set_output(GAS_VALVE, false);
+    set_output(SYS_STATUS, false);
+    set_output(IGNITER, false);
+    delay(1000);
+  }
+
 }
