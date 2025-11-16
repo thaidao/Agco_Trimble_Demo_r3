@@ -30,10 +30,18 @@ void loop() {
   serial_printf("sensor_voltage %i\n", sensor_voltage);
   set_output(GAS_VALVE, sensor_voltage > 2000);
 
-  delay(1000); // feel free to change. What would you use for an actual iteration period?
+  //delay(1000); // feel free to change. What would you use for an actual iteration period?
 
   while(1)
   {
+    //Read sensor
+    sensor_voltage = read_voltage(TEMPERATURE_SENSOR);
+    serial_printf("sensor_voltage %i\n", sensor_voltage);
+
+    sensor_voltage = read_voltage(TEMPERATURE_SENSOR_REFERENCE);
+    serial_printf("sensor_voltage_ref %i\n", sensor_voltage);
+
+    //Toggle all ouput
     set_output(GAS_VALVE, true);
     set_output(SYS_STATUS, true);
     set_output(IGNITER, true);

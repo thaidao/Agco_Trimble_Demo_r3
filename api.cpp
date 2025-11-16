@@ -34,7 +34,8 @@ uint16_t read_voltage(input_t input)
   }
   else if (input == TEMPERATURE_SENSOR_REFERENCE)
   {
-    return (uint32_t)analogRead(A1) * 5000 / 1023;
+    //return (uint32_t)analogRead(A1) * 5000 / 1023;
+    return ((uint32_t)analogRead(A1) * 1000 / 1023) + 4500; //Range from 4.5V to 5.5V
   }
 
   return 0;
