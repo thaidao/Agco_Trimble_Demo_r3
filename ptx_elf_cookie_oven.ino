@@ -8,7 +8,7 @@ Then check `notes.md`.
 #include "api.h"
 #include "ptx_logging.h"
 #include "ptx_actuator.h"
-
+#include "ptx_oven_config.h"
 
 void setup() {
   Serial.begin(115200);
@@ -62,5 +62,8 @@ void loop() {
     ptx_actuator_set_system_led_status(false);
     delay(1000);
   }
+
+
+  delay(ptx_oven_get_iteration_period());
 
 }
