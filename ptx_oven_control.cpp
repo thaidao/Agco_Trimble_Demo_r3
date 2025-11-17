@@ -110,17 +110,16 @@ void ptx_oven_control_init(void) {
 
 void ptx_oven_control_update(void) {
     uint32_t now = millis();
-	
-	/* Evaluate faults with timing first. */
-	float vref_mv   = 0;
-    float signal_mv = 0;
-	
-    ptx_eval_sensor_faults_with_timing(now, vref_mv, signal_mv);
-    pti_status.door_open = ptx_read_door_open();
-
 
     /* Read and filter sensor data */
     ptx_sensor_reading_t filtered = ptx_sensor_filter_read_and_update();
+    
+    float vref_mv   = (float)filtered.vref_mv;
+    float signal_mv = (float)filtered.signal_mv;
+
+    /* Evaluate faults with timing first. */
+    ptx_eval_sensor_faults_with_timing(now, vref_mv, signal_mv);
+    pti_status.door_open = ptx_read_door_open();
 
     /* Compute temperature (for display/log); control will still be overridden on faults. */
     pti_status.temperature_c = ptx_compute_temperature(vref_mv, signal_mv);
