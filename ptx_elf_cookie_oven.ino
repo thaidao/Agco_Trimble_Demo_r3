@@ -6,14 +6,16 @@ See `requirements.md` for how to help.
 Then check `notes.md`.
 */
 #include "api.h"
+#include "ptx_logging.h"
+#include "ptx_actuator.h"
 
 
 void setup() {
   Serial.begin(115200);
   setup_api();
 
-  Serial.println("Elf oven 2000 starting up.");
-  serial_printf("Days without fire incident: %i\n", 0);
+  PTX_LOGF("Elf oven 2000 starting up.");
+  PTX_LOGF("Days without fire incident: %i\n", 0);
 }
 
 
@@ -42,14 +44,22 @@ void loop() {
     serial_printf("sensor_voltage_ref %i\n", sensor_voltage);
 
     //Toggle all ouput
-    set_output(GAS_VALVE, true);
-    set_output(SYS_STATUS, true);
-    set_output(IGNITER, true);
+    // set_output(GAS_VALVE, true);
+    // set_output(SYS_LED_STATUS, true);
+    // set_output(IGNITER, true);
+
+    ptx_actuator_set_gas(true);
+    ptx_actuator_set_igniter(true);
+    ptx_actuator_set_system_led_status(true);
     delay(1000);
 
-    set_output(GAS_VALVE, false);
-    set_output(SYS_STATUS, false);
-    set_output(IGNITER, false);
+    // set_output(GAS_VALVE, false);
+    // set_output(SYS_LED_STATUS, false);
+    // set_output(IGNITER, false);
+
+    ptx_actuator_set_gas(false);
+    ptx_actuator_set_igniter(false);
+    ptx_actuator_set_system_led_status(false);
     delay(1000);
   }
 

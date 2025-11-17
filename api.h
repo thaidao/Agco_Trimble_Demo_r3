@@ -29,9 +29,9 @@ typedef enum
     // When off, the valve is closed (no gas flowing).
     GAS_VALVE,
 
-    // pin D3
+    // pin D6
     // system status
-    SYS_STATUS,
+    SYS_LED_STATUS,
 
     // pin D7
     // when on, it sparks to ignite gas
@@ -54,6 +54,8 @@ void door_sensor_interrupt_handler(bool voltage_high);
 
 // true for on, false for off
 void set_output(output_t output, bool output_state);
+// read the internal state of a pin configured as an output
+bool read_output(output_t output);
 
 // returns the current number of milliseconds since the Arduino board began running
 uint32_t get_millis();
