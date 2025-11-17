@@ -178,6 +178,32 @@ static void ptx_update_heating(uint32_t now_ms) {
 }
 
 static void ptx_oven_run_log(uint32_t now_ms) {
+	const ptx_oven_config_t* cfg = ptx_oven_get_config();
+    
+    if ((now_ms - pti_last_log_ms) < cfg->periodic_log_ms) return;
+    pti_last_log_ms = now_ms;
+
+    int vref_mV = (int)(pti_status.vref_volts * 1000.0f + 0.5f);
+    int signal_mV = (int)(pti_status.signal_volts * 1000.0f + 0.5f);
+    //int temp_c_i = (int)(pti_status.temperature_c + 0.5f);
+    
+    /* Main status log */
+    PTX_LOGF("temp=%d ºC door=%s state=%d gas=%d ign=%d attempt=%d lockout=%d",
+             pti_status.temperature_c,
+             pti_status.door_open ? "OPEN" : "CLOSED",
+             (int)pti_status.state,
+             pti_status.gas_on ? 1 : 0,
+             pti_status.igniter_on ? 1 : 0,
+             pti_status.ignition_attempt,
+             pti_status.ignition_lockout ? 1 : 0);
+    
+    /* Sensor and fault log */
+    PTX_LOGF("vref=%dmV signal=%dmV vref_fault=%d signal_fault=%d sensor_fault=%d",
+             vref_mV,
+             signal_mV,
+             pti_status.vref_fault ? 1 : 0,
+             pti_status.signal_fault ? 1 : 0,
+             pti_status.sensor_fault ? 1 : 0);
 }
 
 /* Public API */
@@ -187,10 +213,29 @@ const ptx_oven_status_t* ptx_oven_get_status(void) {
 
 void ptx_oven_control_init(void) {
 	
-	/* General initialization */    
+    /* Initialize actuators and sensor filter */
+    pti_status.vref_volts = 0.0f;
+    pti_status.signal_volts = 0.0f;
+    pti_status.temperature_c = -10.0f;
+    pti_status.door_open = false;
+    pti_status.gas_on = false;
+    pti_status.igniter_on = false;
+    pti_status.state = PTX_HEATING_STATE_IDLE;
+    pti_status.vref_fault = false;
+    pti_status.signal_fault = false;
+    pti_status.sensor_fault = false;
+    pti_status.ignition_attempt = 0;
+    pti_status.ignition_lockout = false;
+
+    pti_ignition_start_ms = 0;
+    pti_last_log_ms = 0;
+    pti_ignition_attempt = 0;
+    pti_temp_at_ignition_start = 0.0f;
+    
     /* Initialize actuators and sensor filter */
     ptx_actuator_init();
-    ptx_sensor_filter_init(5);	//Configuratble
+    ptx_sensor_filter_init(5);
+
     PTX_LOGF("oven control init");
 }
 
@@ -223,10 +268,4 @@ void ptx_oven_control_update(void) {
 
 void ptx_oven_set_door_state(bool open) {
     pti_status.door_open = open;
-}
-
-void ptx_oven_reset_ignition_lockout(void) {
-    if (pti_status.state == PTX_HEATING_STATE_LOCKOUT) {
-		//@todo
-    }
 }
