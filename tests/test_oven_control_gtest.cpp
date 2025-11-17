@@ -10,7 +10,7 @@
 static uint16_t mv_for_temp(float vref_mv, float temp_c) {
     // Inverse of mapping in ptx_compute_temperature
     float val = ((temp_c + 10.0f) / 310.0f) * (0.80f * vref_mv) + 0.10f * vref_mv;
-    return (uint16_t)(val + 0.5f);  @//@todo
+    return (uint16_t)(val + 0.5f);  //@todo
 }
 
 // Test fixture for oven control tests
