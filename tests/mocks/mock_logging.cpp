@@ -8,4 +8,8 @@ void ptx_logf(const char* file, int line, const char* format, ...) {
     // Optional: capture logs for assertions; for now, ignore.
     (void)file; (void)line; (void)format;
 }
+void ptx_dbg_logf(const char* file, int line, const char* format, ...) {
+    // Optional: capture logs for assertions; for now, ignore.
+    (void)file; (void)line; (void)format;
+}
 const char* ptx_get_filename(const char* path) { return path; }
