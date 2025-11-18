@@ -23,6 +23,7 @@
 static ptx_oven_status_t pti_status;
 static uint32_t pti_ignition_start_ms = 0;
 static uint32_t pti_last_log_ms = 0;
+static uint32_t pti_last_sys_led_status_ms = 0;
 
 /* Timed sensor fault management */
 static uint32_t pti_out_of_range_since_ms = 0;   /* 0 means not currently out of range */
@@ -93,10 +94,6 @@ static float ptx_compute_temperature(float vref_mv, float signal_mv) {
 #if 0
     temperature = -10.0f + ((signal_mv - low) / (0.80f * vref_mv)) * 310.0f;
 #else
-
-//       // Convert ADC reading to voltage
-//   float Vsensor = adcValue * (vref / 1023.0);
-
     // Normalize voltage
     float x = signal_mv / vref_mv; // fraction of Vref
 
@@ -112,13 +109,31 @@ static float ptx_compute_temperature(float vref_mv, float signal_mv) {
 }
 
 // Control output: igniter and gas
-static void ptx_apply_outputs(void) {
-	ptx_actuator_set_gas(pti_status.gas_on);
+static void ptx_apply_outputs(uint32_t now_ms) {
+
+    static bool sys_led_status = false;
+
+    // Control gas and igniter
+    ptx_actuator_set_gas(pti_status.gas_on);
     ptx_actuator_set_igniter(pti_status.igniter_on);
 	
-    /* Optional LED debug (guard with your own defines to avoid build errors)
-    // set_output(LED_STATUS, pti_status.sensor_fault ? 1 : 0);
-    */
+    // System LED
+    if(pti_status.door_open == true || pti_status.vref_fault||
+            pti_status.signal_fault|| pti_status.sensor_fault)
+    {
+            //Blink quickly if any fault
+            sys_led_status = !sys_led_status;
+            set_output(SYS_LED_STATUS_PIN, sys_led_status);
+    }
+    else
+    {
+            if ((now_ms - pti_last_sys_led_status_ms) < 3) return;
+            pti_last_sys_led_status_ms = now_ms;
+
+            //Blink each 3 seconds
+            sys_led_status = !sys_led_status;
+            set_output(SYS_LED_STATUS_PIN, sys_led_status);
+    }
 }
 
 // Main state machine
@@ -301,7 +316,7 @@ void ptx_oven_control_update(void) {
     ptx_update_heating(now);
 
     /* Apply outputs and log. */
-    ptx_apply_outputs();
+    ptx_apply_outputs(now);
     ptx_oven_run_log(now);
     
     /* Update public status */
