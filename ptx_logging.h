@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#define DEBUG_EN 1      //1: Enable debug log and otherwise
+#define DEBUG_EN 0      //1: Enable debug log and otherwise
 
 /**
  * @brief Log macro with automatic file and line detection

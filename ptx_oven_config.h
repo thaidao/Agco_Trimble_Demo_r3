@@ -31,7 +31,7 @@ typedef struct {
     uint8_t  	max_ignition_attempts;   // Maximum number of ignition retry attempts (default: 3) 
 	
 	/* Others */
-	uint16_t	iteration_period;		// Default 50 or ~20 Hz control loop; module logs once per second	
+	uint16_t	iteration_period;		// 100ms	
 
     
 } ptx_oven_config_t;

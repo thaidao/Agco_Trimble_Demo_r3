@@ -16,7 +16,7 @@ static ptx_oven_config_t pti_oven_config = {
     .temp_target_c          = 180.0f, 	/* target temperature */
     .temp_delta_c           = 5.0f,   	/* hysteresis half-band */
     .max_ignition_attempts  = 3U,     	/* 3 ignition retry attempts */
-	  .iteration_period        = 50U,		/* 50 or 20Hz */
+	  .iteration_period        = 100U,		/* 100ms */
 };
 
 const ptx_oven_config_t* ptx_oven_get_config(void) {

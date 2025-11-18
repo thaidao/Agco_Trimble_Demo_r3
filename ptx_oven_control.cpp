@@ -89,8 +89,11 @@ static float ptx_compute_temperature(float vref_mv, float signal_mv) {
 
     /* Handle exception */
     if (signal_mv <= low) return -10.0f;
-    if (signal_mv >= high) return 300.0f;
-    
+    if (signal_mv >= high) 
+    {
+        PTX_DBG_LOGF("[ERROR]Over temperature !!!");
+        return 300.0f;
+    }
 #if 0
     temperature = -10.0f + ((signal_mv - low) / (0.80f * vref_mv)) * 310.0f;
 #else
@@ -145,7 +148,7 @@ static void ptx_update_heating(uint32_t now_ms) {
 	{
 		if (pti_status.gas_on || pti_status.igniter_on) 
 		{
-			PTX_LOGF("shutdown: door open or sensor fault");
+			PTX_LOGF("[ERROR]shutdown: door open or sensor fault");
 		}
 		
 		pti_status.gas_on = false;
@@ -300,8 +303,8 @@ void ptx_oven_control_update(void) {
 
     PTX_DBG_LOGF("ptx_oven_control_update[begin]: vref=%dmV signal=%dmV", (int)vref_mv, (int)signal_mv);
 
+#if 1
     /* Evaluate faults with timing first. */
-#if 0
     ptx_eval_sensor_faults_with_timing(now, vref_mv, signal_mv);
     pti_status.door_open = ptx_read_door_open();
 

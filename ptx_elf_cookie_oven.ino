@@ -49,17 +49,19 @@ void loop() {
   //delay(1000); // feel free to change. What would you use for an actual iteration period?
 
   //quick test hardware
-  //test_hardware();
-
+#if 0
+  test_hardware();
+#endif
   // Run oven control loop
   ptx_oven_control_update();
 
-  // Delay 50 ms or ~20 Hz control loop
-  delay(1000);
+  // Delay 100 ms. Because temperature changes very slowly, Safety is guaranteed by the door interrupt, not the loop speed
   //delay(ptx_oven_get_iteration_period());
+  delay(100);
 
 }
 
+// Simple hardware test
 void test_hardware()
 {
   uint16_t sensor_voltage = 0;

@@ -12,10 +12,10 @@ static void door_sensor_IRQ_handler();
 
 void setup_api()
 {
-  pinMode(GAS_VALVE_PIN, OUTPUT); // digital pin 2
-  pinMode(DOOR_SWITCH_PIN, INPUT); // digital pin 3
-  pinMode(SYS_LED_STATUS_PIN, OUTPUT); // digital pin 6
-  pinMode(IGNITER_PIN, OUTPUT); // digital pin 7
+  pinMode(GAS_VALVE_PIN, OUTPUT);       // digital pin 2
+  pinMode(DOOR_SWITCH_PIN, INPUT);      // digital pin 3
+  pinMode(SYS_LED_STATUS_PIN, OUTPUT);  // digital pin 6
+  pinMode(IGNITER_PIN, OUTPUT);         // digital pin 7
 
   door_sensor_interrupt_handler(digitalRead(DOOR_SWITCH_PIN) == HIGH); // we may not get an interrupt at startup, so we call the handler manually
   attachInterrupt(digitalPinToInterrupt(DOOR_SWITCH_PIN), door_sensor_IRQ_handler, CHANGE); // digital pin 3
@@ -31,14 +31,14 @@ uint16_t read_voltage(input_t input)
 { 
   if (input == TEMPERATURE_SENSOR)
   {
-    //return (uint32_t)analogRead(A0) * 5000 / 1023;
-    return 450;//2598 ~175;//2715 ~185;//2656;//~180
+    return (uint32_t)analogRead(A0) * 5000 / 1023;
+    //return //450 ~-10V;//2598 ~175;//2715 ~185;//2656;//~180
   }
   else if (input == TEMPERATURE_SENSOR_REFERENCE)
   {
     //return (uint32_t)analogRead(A1) * 5000 / 1023;
-    //return ((uint32_t)analogRead(A1) * 1000 / 1023) + 4500; //Range from 4.5V to 5.5V for easier testing
-    return 4500;
+    return ((uint32_t)analogRead(A1) * 1000 / 1023) + 4500; //Range from 4.5V to 5.5V for easier testing
+    //return 4500;
   }
 
   return 0;
