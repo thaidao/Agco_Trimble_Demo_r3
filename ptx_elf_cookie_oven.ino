@@ -54,7 +54,8 @@ void loop() {
   ptx_oven_control_update();
 
   // Delay 50 ms or ~20 Hz control loop
-  delay(ptx_oven_get_iteration_period());
+  delay(1000);
+  //delay(ptx_oven_get_iteration_period());
 
 }
 

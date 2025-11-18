@@ -70,14 +70,37 @@ static void ptx_eval_sensor_faults_with_timing(uint32_t now_ms, float vref_mv, f
 }
 
 static float ptx_compute_temperature(float vref_mv, float signal_mv) {
+
+    // @Debug purpose
+    PTX_DBG_LOGF("ptx_compute_temperature[begin]: vref=%dmV signal=%dmV", (int)vref_mv, (int)signal_mv);
+
 	/* Linear map -10C at 10% vref to 300C at 90% vref (span 310C over 0.8*vref). */
     float low = 0.10f * vref_mv;
     float high = 0.90f * vref_mv;
+    float temperature;
 
     if (signal_mv <= low) return -10.0f;
     if (signal_mv >= high) return 300.0f;
+    
+#if 0
+    temperature = -10.0f + ((signal_mv - low) / (0.80f * vref_mv)) * 310.0f;
+#else
 
-    return -10.0f + ((signal_mv - low) / (0.80f * vref_mv)) * 310.0f;
+//       // Convert ADC reading to voltage
+//   float Vsensor = adcValue * (vref / 1023.0);
+
+    // Normalize voltage
+    float x = signal_mv / vref_mv; // fraction of Vref
+
+    // Calculate temperature
+    temperature = 387.5 * x - 48.75;
+
+#endif
+
+    // @Debug purpose
+    PTX_DBG_LOGF("ptx_compute_temperature[end]: temperature=%i ", (int)temperature);
+    return temperature;
+
 }
 
 static void ptx_apply_outputs(void) {
@@ -188,8 +211,8 @@ static void ptx_oven_run_log(uint32_t now_ms) {
     //int temp_c_i = (int)(pti_status.temperature_c + 0.5f);
     
     /* Main status log */
-    PTX_LOGF("temp=%d ºC door=%s state=%d gas=%d ign=%d attempt=%d lockout=%d",
-             pti_status.temperature_c,
+    PTX_LOGF("temp=%dºC door=%s state=%d gas=%d ign=%d attempt=%d lockout=%d",
+             (int)pti_status.temperature_c,
              pti_status.door_open ? "OPEN" : "CLOSED",
              (int)pti_status.state,
              pti_status.gas_on ? 1 : 0,
@@ -247,6 +270,8 @@ void ptx_oven_control_update(void) {
     
     float vref_mv   = (float)filtered.vref_mv;
     float signal_mv = (float)filtered.signal_mv;
+
+    PTX_DBG_LOGF("ptx_oven_control_update[begin]: vref=%dmV signal=%dmV", (int)vref_mv, (int)signal_mv);
 
     /* Evaluate faults with timing first. */
     ptx_eval_sensor_faults_with_timing(now, vref_mv, signal_mv);

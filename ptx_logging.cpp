@@ -44,3 +44,18 @@ void ptx_logf(const char* file, int line, const char* format, ...) {
     
     ptx_log(file, line, buffer);
 }
+
+//Formatted logging function
+void ptx_dbg_logf(const char* file, int line, const char* format, ...) {
+
+#if DEBUG_EN
+    char buffer[256];
+    va_list args;
+    
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    
+    ptx_log(file, line, buffer);
+#endif
+}

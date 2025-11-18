@@ -13,6 +13,14 @@
 extern "C" {
 #endif
 
+#define DEBUG_EN 1      //1: Enable debug log and otherwise
+
+/**
+ * @brief Log macro with automatic file and line detection
+ * @param msg Message string to debug log
+ */
+#define PTX_DBG_LOGF(format, ...) ptx_dbg_logf(__FILE__, __LINE__, format, ##__VA_ARGS__)
+
 /**
  * @brief Log macro with automatic file and line detection
  * @param msg Message string to log
@@ -48,6 +56,9 @@ void ptx_log(const char* file, int line, const char* msg);
  * @param ... Variable arguments for formatting
  */
 void ptx_logf(const char* file, int line, const char* format, ...);
+
+
+void ptx_dbg_logf(const char* file, int line, const char* format, ...);
 
 /**
  * @brief Extract filename from full path
