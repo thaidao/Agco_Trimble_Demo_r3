@@ -13,7 +13,7 @@ void ptx_log_init() {
 
 //Get log file name
 const char* ptx_get_filename(const char* path) {
-    const char* filename = "tbd"; 
+    const char* filename = "log"; 
     return filename;
 }
 

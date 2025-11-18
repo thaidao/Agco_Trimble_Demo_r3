@@ -262,6 +262,75 @@ void ptx_oven_control_init(void) {
     PTX_LOGF("oven control init");
 }
 
+void dummytest_statemachine()
+{
+    static int cnt = 0;
+    
+    switch(cnt)
+    {
+        case 0:
+            // pti_status.vref_volts = 0.0f;
+            // pti_status.signal_volts = 0.0f;
+            // pti_status.temperature_c = -10.0f;
+            pti_status.door_open = true;
+
+            break;
+        case 1:
+            //door close, expect ignitier on, gas on
+            pti_status.door_open = false;
+            pti_status.temperature_c = 150.0f;
+            break;
+        case 7: //after 5 sec for igniter 
+
+            //door close, expect ignitier off, gas on
+            pti_status.door_open = false;
+            pti_status.temperature_c = 150.0f;
+
+            break;
+        case 8:
+            pti_status.door_open = false;
+            pti_status.temperature_c = 175.0f;
+            break;
+        case 9:
+            pti_status.door_open = false;
+            pti_status.temperature_c = 180.0f;
+            break;
+        case 10:
+            //door close, expect ignitier off, gas off
+            pti_status.door_open = false;
+            pti_status.temperature_c = 186.0f;
+            break;
+        
+        case 11:
+            //door close, expect ignitier on, gas on
+            pti_status.door_open = false;
+            pti_status.temperature_c = 174.0f;
+            break;
+        case 17:
+            //door close, expect ignitier off, gas on
+            pti_status.door_open = false;
+            pti_status.temperature_c = 181.0f;
+            break;
+        case 18:
+            //door open, expect ignitier off, gas off
+            pti_status.door_open = true;
+            break;
+        case 19:
+            //door close, expect ignitier on, gas off
+            pti_status.door_open = false;
+            pti_status.temperature_c = 170.0f;  //182
+            break;
+        case 20:
+            //door close, overheat, expect ignitier on, gas off
+            pti_status.door_open = false;
+            pti_status.temperature_c = 301.0f;
+            break;
+
+    }
+    if (cnt++ > 21)
+        cnt = 0;
+}
+
 void ptx_oven_control_update(void) {
     uint32_t now = millis();
 
@@ -274,11 +343,16 @@ void ptx_oven_control_update(void) {
     PTX_DBG_LOGF("ptx_oven_control_update[begin]: vref=%dmV signal=%dmV", (int)vref_mv, (int)signal_mv);
 
     /* Evaluate faults with timing first. */
+#if 0
     ptx_eval_sensor_faults_with_timing(now, vref_mv, signal_mv);
     pti_status.door_open = ptx_read_door_open();
 
     /* Compute temperature (for display/log); control will still be overridden on faults. */
     pti_status.temperature_c = ptx_compute_temperature(vref_mv, signal_mv);
+#else
+    /* @ for debug only */
+    dummytest_statemachine();
+#endif
 
     /* Control decision. */
     ptx_update_heating(now);
