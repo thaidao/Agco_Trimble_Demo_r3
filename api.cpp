@@ -12,9 +12,9 @@ static void door_sensor_IRQ_handler();
 
 void setup_api()
 {
-  pinMode(2, OUTPUT); // digital pin 2
-  pinMode(3, OUTPUT); // digital pin 3
-  pinMode(7, OUTPUT); // digital pin 7
+  pinMode(GAS_VALVE_PIN, OUTPUT); // digital pin 2
+  pinMode(SYS_LED_STATUS_PIN, OUTPUT); // digital pin 3
+  pinMode(IGNITER_PIN, OUTPUT); // digital pin 7
 
   door_sensor_interrupt_handler(digitalRead(3) == HIGH); // we may not get an interrupt at startup, so we call the handler manually
   attachInterrupt(digitalPinToInterrupt(3), door_sensor_IRQ_handler, CHANGE); // digital pin 3
@@ -27,7 +27,7 @@ static void door_sensor_IRQ_handler()
 
 // returns voltage in millivolts
 uint16_t read_voltage(input_t input)
-{
+{ 
   if (input == TEMPERATURE_SENSOR)
   {
     return (uint32_t)analogRead(A0) * 5000 / 1023;
@@ -46,15 +46,15 @@ void set_output(output_t output, bool output_state)
 {
   if (output == GAS_VALVE)
   {
-    digitalWrite(2, output_state);
+    digitalWrite(GAS_VALVE_PIN, output_state);
   }
   else if (output == SYS_LED_STATUS)
   {
-    digitalWrite(6, output_state);
+    digitalWrite(SYS_LED_STATUS_PIN, output_state);
   }
   else if (output == IGNITER)
   {
-    digitalWrite(7, output_state);
+    digitalWrite(IGNITER_PIN, output_state);
   }
 
 }
