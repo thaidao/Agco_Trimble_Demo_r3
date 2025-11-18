@@ -31,6 +31,7 @@ void door_sensor_interrupt_handler(bool voltage_high)
 {
   // @TODO: add small filtering for stability if needed
   if (voltage_high) {
+    PTX_LOGF("[WARNING] Door is opened");
     ptx_actuator_emergency_stop();
   }
 

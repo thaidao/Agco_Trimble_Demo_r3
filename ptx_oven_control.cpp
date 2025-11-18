@@ -33,10 +33,15 @@ static uint8_t pti_ignition_attempt = 0;         /* Current attempt number (0 = 
 static uint32_t pti_purge_start_ms = 0;          /* Start time of purge phase */
 static float pti_temp_at_ignition_start = 0.0f;  /* Temperature when ignition started (for flame detection) */
 
+/* Local function */
+static void dummytest_statemachine();                   /* Dummy test for real hardware */
+
+// Set door status
 static bool ptx_read_door_open(void) {
     return pti_status.door_open;
 }
 
+// Check sensor out of range
 static void ptx_eval_sensor_faults_with_timing(uint32_t now_ms, float vref_mv, float signal_mv) {
 	const ptx_oven_config_t* cfg = ptx_oven_get_config();
 		
@@ -56,19 +61,21 @@ static void ptx_eval_sensor_faults_with_timing(uint32_t now_ms, float vref_mv, f
 
     bool out_of_range = vref_bad || signal_bad;
 
+    /* Handle an exception */
     if (out_of_range) {
 		pti_status.sensor_fault = true;
-        PTX_LOGF("sensor fault latched");
+        PTX_LOGF("[ERROR] Sensor fault error");
 
     } else {
         /* Readings are valid; clear out-of-range window */
 		pti_status.sensor_fault = false; /* clear latched fault */
 		pti_valid_since_ms = 0;
-		PTX_LOGF("sensor fault cleared");
+		//PTX_LOGF("sensor fault cleared");
     }
 	
 }
 
+// Calculate a temperature from vref and signal
 static float ptx_compute_temperature(float vref_mv, float signal_mv) {
 
     // @Debug purpose
@@ -79,6 +86,7 @@ static float ptx_compute_temperature(float vref_mv, float signal_mv) {
     float high = 0.90f * vref_mv;
     float temperature;
 
+    /* Handle exception */
     if (signal_mv <= low) return -10.0f;
     if (signal_mv >= high) return 300.0f;
     
@@ -103,6 +111,7 @@ static float ptx_compute_temperature(float vref_mv, float signal_mv) {
 
 }
 
+// Control output: igniter and gas
 static void ptx_apply_outputs(void) {
 	ptx_actuator_set_gas(pti_status.gas_on);
     ptx_actuator_set_igniter(pti_status.igniter_on);
@@ -200,6 +209,7 @@ static void ptx_update_heating(uint32_t now_ms) {
     }
 }
 
+// Capture and show system log
 static void ptx_oven_run_log(uint32_t now_ms) {
 	const ptx_oven_config_t* cfg = ptx_oven_get_config();
     
@@ -234,6 +244,7 @@ const ptx_oven_status_t* ptx_oven_get_status(void) {
     return &pti_status;
 }
 
+// Initialize oven controller
 void ptx_oven_control_init(void) {
 	
     /* Initialize actuators and sensor filter */
@@ -262,9 +273,51 @@ void ptx_oven_control_init(void) {
     PTX_LOGF("oven control init");
 }
 
+// The heart of an oven controller program
+void ptx_oven_control_update(void) {
+    uint32_t now = millis();
+
+    /* Read and filter sensor data */
+    ptx_sensor_reading_t filtered = ptx_sensor_filter_read_and_update();
+    
+    float vref_mv   = (float)filtered.vref_mv;
+    float signal_mv = (float)filtered.signal_mv;
+
+    PTX_DBG_LOGF("ptx_oven_control_update[begin]: vref=%dmV signal=%dmV", (int)vref_mv, (int)signal_mv);
+
+    /* Evaluate faults with timing first. */
+#if 0
+    ptx_eval_sensor_faults_with_timing(now, vref_mv, signal_mv);
+    pti_status.door_open = ptx_read_door_open();
+
+    /* Compute temperature (for display/log); control will still be overridden on faults. */
+    pti_status.temperature_c = ptx_compute_temperature(vref_mv, signal_mv);
+#else
+    /* @ for debug only */
+    dummytest_statemachine();
+#endif
+
+    /* Control decision. */
+    ptx_update_heating(now);
+
+    /* Apply outputs and log. */
+    ptx_apply_outputs();
+    ptx_oven_run_log(now);
+    
+    /* Update public status */
+    pti_status.ignition_attempt = pti_ignition_attempt;
+}
+
+// Set door state
+void ptx_oven_set_door_state(bool open) {
+    pti_status.door_open = open;
+}
+
+// Simple stratgy to test hw without peripheral
 void dummytest_statemachine()
 {
     static int cnt = 0;
+    //NOTE: no real interrupt, then some status could be wrong
     
     switch(cnt)
     {
@@ -329,42 +382,4 @@ void dummytest_statemachine()
     }
     if (cnt++ > 21)
         cnt = 0;
-}
-
-void ptx_oven_control_update(void) {
-    uint32_t now = millis();
-
-    /* Read and filter sensor data */
-    ptx_sensor_reading_t filtered = ptx_sensor_filter_read_and_update();
-    
-    float vref_mv   = (float)filtered.vref_mv;
-    float signal_mv = (float)filtered.signal_mv;
-
-    PTX_DBG_LOGF("ptx_oven_control_update[begin]: vref=%dmV signal=%dmV", (int)vref_mv, (int)signal_mv);
-
-    /* Evaluate faults with timing first. */
-#if 0
-    ptx_eval_sensor_faults_with_timing(now, vref_mv, signal_mv);
-    pti_status.door_open = ptx_read_door_open();
-
-    /* Compute temperature (for display/log); control will still be overridden on faults. */
-    pti_status.temperature_c = ptx_compute_temperature(vref_mv, signal_mv);
-#else
-    /* @ for debug only */
-    dummytest_statemachine();
-#endif
-
-    /* Control decision. */
-    ptx_update_heating(now);
-
-    /* Apply outputs and log. */
-    ptx_apply_outputs();
-    ptx_oven_run_log(now);
-    
-    /* Update public status */
-    pti_status.ignition_attempt = pti_ignition_attempt;
-}
-
-void ptx_oven_set_door_state(bool open) {
-    pti_status.door_open = open;
 }
