@@ -19,6 +19,9 @@
 #define PTX_FLAME_DETECT_ENABLED 0  /* Disable flame detection by default (assume ignition success) */
 #endif
 
+#define FAST_BLINK_MS 500    // quick blink when system fault
+#define SLOW_BLINK_MS 3000   // slow blink when system normal
+
 /* Internal state */
 static ptx_oven_status_t pti_status;
 static uint32_t pti_ignition_start_ms = 0;
@@ -115,27 +118,25 @@ static float ptx_compute_temperature(float vref_mv, float signal_mv) {
 static void ptx_apply_outputs(uint32_t now_ms) {
 
     static bool sys_led_status = false;
+    static uint32_t sys_led_last_toggle_ms = 0;
 
     // Control gas and igniter
     ptx_actuator_set_gas(pti_status.gas_on);
     ptx_actuator_set_igniter(pti_status.igniter_on);
 	
-    // System LED
-    if(pti_status.door_open == true || pti_status.vref_fault||
+    // Select an interval
+    uint32_t blink_interval = SLOW_BLINK_MS;
+    if(pti_status.door_open || pti_status.vref_fault||
             pti_status.signal_fault|| pti_status.sensor_fault)
     {
-            //Blink quickly if any fault
-            sys_led_status = !sys_led_status;
-            set_output(SYS_LED_STATUS_PIN, sys_led_status);
+        blink_interval = FAST_BLINK_MS;
     }
-    else
-    {
-            if ((now_ms - pti_last_sys_led_status_ms) < 3) return;
-            pti_last_sys_led_status_ms = now_ms;
 
-            //Blink each 3 seconds
+    // Toggle LED if time is reached
+    if ((uint32_t)(now_ms - sys_led_last_toggle_ms) >= blink_interval) {
             sys_led_status = !sys_led_status;
-            set_output(SYS_LED_STATUS_PIN, sys_led_status);
+        set_output(SYS_LED_STATUS, sys_led_status);
+        sys_led_last_toggle_ms = now_ms;
     }
 }
 
@@ -177,7 +178,7 @@ static void ptx_update_heating(uint32_t now_ms) {
                 pti_temp_at_ignition_start = pti_status.temperature_c;
                 
 				//int temp_c_i = (int)(pti_status.temperature_c + 0.5f);
-                PTX_LOGF("ignite start attempt=%d temp=%dC", pti_ignition_attempt, pti_status.temperature_c);
+                PTX_LOGF("ignite start attempt=%d temp=%d°C", pti_ignition_attempt, (int)pti_status.temperature_c);
             }
             break;
 
@@ -239,7 +240,7 @@ static void ptx_oven_run_log(uint32_t now_ms) {
     //int temp_c_i = (int)(pti_status.temperature_c + 0.5f);
     
     /* Main status log */
-    PTX_LOGF("temp=%dºC door=%s state=%d gas=%d ign=%d attempt=%d lockout=%d",
+    PTX_LOGF("temp=%d°C door=%s state=%d gas=%d ign=%d attempt=%d lockout=%d",
              (int)pti_status.temperature_c,
              pti_status.door_open ? "OPEN" : "CLOSED",
              (int)pti_status.state,

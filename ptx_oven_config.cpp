@@ -39,7 +39,7 @@ void ptx_oven_reset_config_to_defaults(void) {
     pti_oven_config.temp_target_c          	= 180.0f;
     pti_oven_config.temp_delta_c           	= 2.0f;
     pti_oven_config.max_ignition_attempts  	= 3U;
-    pti_oven_config.iteration_period        = 50U;
+    pti_oven_config.iteration_period        = 100U;
 }
 
 /* Individual parameter setters */
