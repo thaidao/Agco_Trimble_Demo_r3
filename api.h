@@ -12,9 +12,10 @@
 extern "C" {
 #endif
 
-#define GAS_VALVE_PIN           2
-#define SYS_LED_STATUS_PIN      6
-#define IGNITER_PIN             7
+#define GAS_VALVE_PIN           2       //Gas valve:    out
+#define DOOR_SWITCH_PIN         3       //Door switch:  in
+#define SYS_LED_STATUS_PIN      6       //System LED:   out
+#define IGNITER_PIN             7       //Igniter:      out
 
 typedef enum
 {

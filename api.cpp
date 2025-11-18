@@ -13,16 +13,17 @@ static void door_sensor_IRQ_handler();
 void setup_api()
 {
   pinMode(GAS_VALVE_PIN, OUTPUT); // digital pin 2
-  pinMode(SYS_LED_STATUS_PIN, OUTPUT); // digital pin 3
+  pinMode(DOOR_SWITCH_PIN, INPUT); // digital pin 3
+  pinMode(SYS_LED_STATUS_PIN, OUTPUT); // digital pin 6
   pinMode(IGNITER_PIN, OUTPUT); // digital pin 7
 
-  door_sensor_interrupt_handler(digitalRead(3) == HIGH); // we may not get an interrupt at startup, so we call the handler manually
-  attachInterrupt(digitalPinToInterrupt(3), door_sensor_IRQ_handler, CHANGE); // digital pin 3
+  door_sensor_interrupt_handler(digitalRead(DOOR_SWITCH_PIN) == HIGH); // we may not get an interrupt at startup, so we call the handler manually
+  attachInterrupt(digitalPinToInterrupt(DOOR_SWITCH_PIN), door_sensor_IRQ_handler, CHANGE); // digital pin 3
 }
 
 static void door_sensor_IRQ_handler()
 {
-  door_sensor_interrupt_handler(digitalRead(3) == HIGH);
+  door_sensor_interrupt_handler(digitalRead(DOOR_SWITCH_PIN) == HIGH);
 }
 
 // returns voltage in millivolts
@@ -66,15 +67,15 @@ bool read_output(output_t output)
 {
   if (output == GAS_VALVE)
   {
-    return digitalRead(2) == HIGH;
+    return digitalRead(GAS_VALVE_PIN) == HIGH;
   }
   else if (output == SYS_LED_STATUS)
   {
-    return digitalRead(6) == HIGH;
+    return digitalRead(SYS_LED_STATUS_PIN) == HIGH;
   }
   else if (output == IGNITER)
   {
-    return digitalRead(7) == HIGH;
+    return digitalRead(IGNITER_PIN) == HIGH;
   }
   return false;
 }
