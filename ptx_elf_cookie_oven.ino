@@ -11,6 +11,9 @@ Then check `notes.md`.
 #include "ptx_oven_config.h"
 #include "ptx_oven_control.h"
 
+#define DOOR_SENSOR_DEBOUCING_MS      10 // 10ms for deboucing
+volatile static uint32_t door_sensor_int_ms = 0;
+
 void setup() {
 
   //Initialize serial
@@ -29,10 +32,21 @@ void setup() {
 
 void door_sensor_interrupt_handler(bool voltage_high)
 {
-  // @TODO: add small filtering for stability if needed
+
+  //simple deboucing filter for statbility
+  uint32_t now = get_millis();
+  if (now - door_sensor_int_ms < DOOR_SENSOR_DEBOUCING_MS) return;
+  //Update current time
+  door_sensor_int_ms = now;
+
   if (voltage_high) {
     PTX_LOGF("[WARNING] Door is opened");
+
+    //Immidiate turn off igniter, gas
     ptx_actuator_emergency_stop();
+  }else
+  {
+    PTX_LOGF("[WARNING] Door is closed");
   }
 
   // Propagate state to controller; controller loop will handle any logging.

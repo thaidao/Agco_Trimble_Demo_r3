@@ -263,14 +263,28 @@ const ptx_oven_status_t* ptx_oven_get_status(void) {
     return &pti_status;
 }
 
+// Get instant temperature
+float ptx_oven_get_instant_temperature(void) {
+
+    float temperature_c = 0;
+    ptx_sensor_reading_t filtered = ptx_sensor_filter_read_and_update();
+    
+    float vref_mv   = (float)filtered.vref_mv;
+    float signal_mv = (float)filtered.signal_mv;
+    
+    temperature_c = ptx_compute_temperature(vref_mv, signal_mv);
+
+    return temperature_c;
+}
+
 // Initialize oven controller
 void ptx_oven_control_init(void) {
 	
     /* Initialize actuators and sensor filter */
-    pti_status.vref_volts = 0.0f;
-    pti_status.signal_volts = 0.0f;
-    pti_status.temperature_c = -10.0f;
-    pti_status.door_open = false;
+    pti_status.vref_volts = read_voltage(TEMPERATURE_SENSOR_REFERENCE)/1000.0f;//0.0f;
+    pti_status.signal_volts = read_voltage(TEMPERATURE_SENSOR)/1000.0f;//0.0f;
+    pti_status.temperature_c = ptx_oven_get_instant_temperature(); //-10.0f;
+    pti_status.door_open = read_digital_input(DOOR_SWITCH);//false;
     pti_status.gas_on = false;
     pti_status.igniter_on = false;
     pti_status.state = PTX_HEATING_STATE_IDLE;

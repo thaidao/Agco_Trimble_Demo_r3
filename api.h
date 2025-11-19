@@ -43,6 +43,12 @@ typedef enum
     IGNITER,
 } output_t;
 
+typedef enum
+{
+  //Pin 3, door switch
+  DOOR_SWITCH,
+} digital_input_t;
+
 void setup_api();
 
 // returns voltage in millivolts
@@ -61,6 +67,8 @@ void door_sensor_interrupt_handler(bool voltage_high);
 void set_output(output_t output, bool output_state);
 // read the internal state of a pin configured as an output
 bool read_output(output_t output);
+// read the state of a pin configured as an input
+bool read_digital_input(digital_input_t input);
 
 // returns the current number of milliseconds since the Arduino board began running
 uint32_t get_millis();

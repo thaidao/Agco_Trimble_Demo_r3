@@ -8,6 +8,7 @@ static uint16_t pti_vref_mv = 5000;
 static uint16_t pti_signal_mv = 2000;
 static bool pti_gas = false;
 static bool pti_igniter = false;
+static bool pti_door_switch = false;
 
 extern "C" unsigned long millis(void) {
     return pti_now_ms;
@@ -33,6 +34,11 @@ extern "C" void set_output(output_t output, bool output_state) {
 extern "C" bool read_output(output_t output) {
     if (output == GAS_VALVE) return pti_gas;
     if (output == IGNITER) return pti_igniter;
+    return false;
+}
+
+extern "C" bool read_digital_input(digital_input_t input) {
+    if(input == DOOR_SWITCH) return pti_door_switch;
     return false;
 }
 

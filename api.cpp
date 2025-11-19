@@ -80,6 +80,14 @@ bool read_output(output_t output)
   return false;
 }
 
+bool read_digital_input(digital_input_t input)
+{
+  if(input == DOOR_SWITCH)
+  {
+    return digitalRead(DOOR_SWITCH_PIN) == HIGH;
+  }
+}
+
 uint32_t get_millis()
 {
   return millis();
